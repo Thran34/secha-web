@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>secha</title>
+<meta name="description" content="Measure whether your detection survives the removal of the control that masks it today. Security chaos engineering for Kubernetes.">
+<link rel="icon" href="logo.png">
+<style>
+:root {
+  color-scheme: light;
+  --ground:      #f6f8fa;
+  --panel:       #ffffff;
+  --ink:         #10151c;
+  --ink-2:       #414b59;
+  --muted:       #6b7686;
+  --rule:        #dbe1e9;
+  --rule-strong: #b9c3d0;
+  --signal:      #b26a12;
+  --signal-bg:   #fbf2e4;
+  --lost:        #b23a2c;
+  --lost-bg:     #fbeceb;
+  --held:        #1a7a55;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground:      #0d1117;
+    --panel:       #141b23;
+    --ink:         #eef2f7;
+    --ink-2:       #b6c1cf;
+    --muted:       #7e8b9c;
+    --rule:        #212b36;
+    --rule-strong: #33404e;
+    --signal:      #e9a94e;
+    --signal-bg:   #241c0e;
+    --lost:        #e8695a;
+    --lost-bg:     #2a1512;
+    --held:        #4bbd8c;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground:      #0d1117;
+  --panel:       #141b23;
+  --ink:         #eef2f7;
+  --ink-2:       #b6c1cf;
+  --muted:       #7e8b9c;
+  --rule:        #212b36;
+  --rule-strong: #33404e;
+  --signal:      #e9a94e;
+  --signal-bg:   #241c0e;
+  --lost:        #e8695a;
+  --lost-bg:     #2a1512;
+  --held:        #4bbd8c;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+a { color: var(--ink); text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--signal); }
+a:focus-visible, .btn:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.wrap {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+section { border-top: 1px solid var(--rule); }
+section:first-of-type { border-top: 0; }
+
+.stack { display: flex; flex-direction: column; }
+
+/* ---------- masthead ---------- */
+
+.masthead { padding: 56px 0 40px; }
+
+.brand { display: flex; align-items: center; gap: 14px; margin-bottom: 52px; }
+.brand .mark { width: 25px; height: auto; display: block; overflow: visible; }
+.brand .mark .shield { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+.brand .mark .crack {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.brand .name {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.brand .kind {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  border-left: 1px solid var(--rule-strong);
+  padding-left: 14px;
+}
+
+h1 {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: clamp(27px, 4.4vw, 44px);
+  line-height: 1.22;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  margin: 0 0 26px;
+  max-width: 20ch;
+  text-wrap: balance;
+}
+h1 em {
+  font-style: normal;
+  color: var(--signal);
+}
+
+.lede {
+  font-size: 19px;
+  color: var(--ink-2);
+  max-width: 60ch;
+  margin: 0 0 34px;
+}
+.lede strong { color: var(--ink); font-weight: 600; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+.btn {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 14px;
+  padding: 11px 18px;
+  border: 1px solid var(--rule-strong);
+  background: var(--panel);
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-block;
+}
+.btn:hover { border-color: var(--signal); color: var(--signal); }
+.btn-primary {
+  background: var(--ink);
+  color: var(--ground);
+  border-color: var(--ink);
+}
+.btn-primary:hover { background: var(--signal); border-color: var(--signal); color: var(--ground); }
+
+/* ---------- sections ---------- */
+
+.block { padding: 54px 0; }
+
+.eyebrow {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+
+h2 {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 24px;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  margin: 0 0 18px;
+  text-wrap: balance;
+}
+
+h3 {
+  font-size: 16px;
+  font-weight: 650;
+  margin: 0 0 6px;
+}
+
+p { margin: 0 0 18px; max-width: 68ch; }
+p:last-child { margin-bottom: 0; }
+.dim { color: var(--ink-2); }
+
+/* ---------- terminal readout ---------- */
+
+.readout {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  margin: 0 0 22px;
+  overflow-x: auto;
+}
+.readout-head {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  color: var(--muted);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+.readout-head .prompt { color: var(--signal); }
+
+table.delta {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+table.delta th, table.delta td {
+  text-align: left;
+  padding: 9px 20px;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+table.delta thead th {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+table.delta tbody tr:last-child th,
+table.delta tbody tr:last-child td { border-bottom: 0; }
+table.delta tbody th { font-weight: 400; color: var(--ink-2); }
+
+tr.pivot th, tr.pivot td { background: var(--signal-bg); }
+tr.pivot th { color: var(--ink); font-weight: 600; }
+.val-lost { color: var(--lost); font-weight: 600; }
+.val-held { color: var(--held); font-weight: 600; }
+
+.readout-note {
+  padding: 16px 20px;
+  border-top: 1px solid var(--rule);
+  font-size: 14.5px;
+  color: var(--ink-2);
+  max-width: none;
+}
+
+pre {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  padding: 18px 20px;
+  overflow-x: auto;
+  margin: 0 0 18px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+pre b { color: var(--ink); font-weight: 600; }
+pre .c { color: var(--muted); }
+pre .s { color: var(--signal); }
+
+code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  padding: 1px 5px;
+}
+
+/* ---------- comparison ---------- */
+
+.versus { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+@media (min-width: 720px) { .versus { grid-template-columns: 1fr 1fr; } }
+.versus > div { background: var(--panel); padding: 22px 24px; }
+.versus .q {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 15px;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+.versus .who {
+  font-size: 12px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+.versus .mine .q { color: var(--signal); }
+.versus p { font-size: 15px; margin: 0; color: var(--ink-2); }
+
+/* ---------- indicator list ---------- */
+
+dl.specs { margin: 0; display: grid; gap: 0; }
+dl.specs > div {
+  display: grid;
+  gap: 4px 24px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+@media (min-width: 720px) { dl.specs > div { grid-template-columns: 210px 1fr; gap: 0 24px; } }
+dl.specs > div:last-child { border-bottom: 0; }
+dl.specs dt {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 14px;
+  color: var(--ink);
+}
+dl.specs dd { margin: 0; font-size: 15px; color: var(--ink-2); }
+
+/* ---------- caution ---------- */
+
+.caution {
+  border: 1px solid var(--rule-strong);
+  border-left: 3px solid var(--signal);
+  background: var(--panel);
+  padding: 20px 24px;
+}
+.caution h3 { margin-bottom: 8px; }
+.caution p { font-size: 15px; color: var(--ink-2); }
+
+/* ---------- footer ---------- */
+
+footer { border-top: 1px solid var(--rule); padding: 34px 0 60px; }
+.footrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 26px;
+  align-items: baseline;
+  font-size: 14px;
+  color: var(--muted);
+}
+.footrow a { color: var(--ink-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 24 28" aria-hidden="true">
+        <path class="shield" d="M12 1.4 21.6 5.2v9.1c0 5.6-4 10.4-9.6 12.3-5.6-1.9-9.6-6.7-9.6-12.3V5.2Z"/>
+        <path class="crack" d="M16.8 3.6 12.6 10.6l3 2.4-5.4 8.9"/>
+      </svg>
+      <span class="name">secha</span>
+      <span class="kind">Security Chaos Engineering</span>
+    </div>
+
+    <h1>Measure whether your detection survives the removal of the control that <em>masks it today</em>.</h1>
+
+    <p class="lede">
+      The control that stops the attack may be the only reason you'd catch it.
+      <strong>Measure what's left when it's gone.</strong>
+    </p>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="https://github.com/Thran34/secha">Source on GitHub</a>
+      <a class="btn" href="#install">Install</a>
+    </div>
+  </header>
+
+</div>
+
+<section>
+  <div class="wrap block">
+    <p class="eyebrow">The result, from a single command</p>
+    <h2>Two redis instances. One password apart.</h2>
+    <p class="dim">
+      Both sit behind the same NetworkPolicy. <code>secha demo</code> deletes it in front of both and runs
+      the same attack. One requires a password; the other does not. Nothing else differs.
+    </p>
+
+    <div class="readout">
+      <div class="readout-head mono"><span class="prompt">$</span> secha demo</div>
+      <table class="delta">
+        <thead>
+          <tr>
+            <th scope="col">indicator</th>
+            <th scope="col">without AUTH</th>
+            <th scope="col">with AUTH</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">fault applied</th>
+            <td>true</td>
+            <td>true</td>
+          </tr>
+          <tr>
+            <th scope="row">data exposed</th>
+            <td class="val-lost">true</td>
+            <td class="val-held">false</td>
+          </tr>
+          <tr class="pivot">
+            <th scope="row">detected</th>
+            <td class="val-lost">false</td>
+            <td class="val-held">true</td>
+          </tr>
+          <tr>
+            <th scope="row">time to detect</th>
+            <td class="val-lost">never</td>
+            <td>676.6 ms</td>
+          </tr>
+          <tr>
+            <th scope="row">recovery integrity</th>
+            <td>true</td>
+            <td>true</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="readout-note">
+        Read the highlighted row. Removing the password did not only cost the protection — it cost the
+        detection too. The signal was the <em>failed</em> authentication, and where nothing authenticates,
+        nothing fails, and nothing is logged.
+      </p>
+    </div>
+
+    <p class="dim">
+      A team that dropped AUTH to simplify a deployment would have lost its visibility at the same moment
+      it lost its defence. No alert would have fired to say so. The dashboard would have looked exactly
+      the same as it did the day before.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap block">
+    <p class="eyebrow">Why this is a different question</p>
+    <div class="versus">
+      <div>
+        <p class="who">Attack simulation</p>
+        <p class="q">Did my detection fire?</p>
+        <p>
+          Runs the attack against your current configuration. If a preventive control stops it early, the
+          detection is never exercised — and a silent gap looks identical to a working rule.
+        </p>
+      </div>
+      <div class="mine">
+        <p class="who">secha</p>
+        <p class="q">Did my detection ever have a chance?</p>
+        <p>
+          Removes the control first, so the layer behind it is actually exercised. The gap surfaces during
+          a test instead of during an incident.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap block">
+    <p class="eyebrow">The loop</p>
+    <h2>Every run is an experiment, not a script.</h2>
+<pre><span class="c">verify steady state</span>  ──►  abort if already violated <span class="c">(a broken precondition
+                          would make "nothing leaked" meaningless)</span>
+        │
+     <b>inject fault</b>     ──►  disable or misconfigure one security control
+        │
+   reset detectors
+        │
+        <b>probe</b>        ──►  run the attack that control was supposed to stop
+        │
+      <b>observe</b>        ──►  did anything catch it, and after how long
+        │
+      <span class="s">restore</span>        ──►  always. interrupted runs too
+        │
+<span class="c">verify steady state</span>  ──►  recovery integrity: measured, not assumed</pre>
+    <p class="dim">
+      The output is not pass or fail. It is a set of numbers you can compare between two configurations,
+      repeat, and put in a report.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap block">
+    <p class="eyebrow">What it measures</p>
+    <dl class="specs">
+      <div><dt>data exposed</dt><dd>Blast radius — whether the attack actually reached the data.</dd></div>
+      <div><dt>defence depth</dt><dd>How many layers had to fail before exposure.</dd></div>
+      <div><dt>detected</dt><dd>Detection coverage — whether any observer saw it at all.</dd></div>
+      <div><dt>mttd</dt><dd>Mean time to detect, averaged only over runs that detected something.</dd></div>
+      <div><dt>fault applied</dt><dd>Whether the misconfiguration survived admission in the first place.</dd></div>
+      <div><dt>recovery integrity</dt><dd>Whether the control genuinely came back, re-verified after restore.</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap block">
+    <p class="eyebrow">Install</p>
+    <h2>One binary. No agents, no operator, no CRDs.</h2>
+<pre>go install github.com/Thran34/secha/cmd/secha@latest</pre>
+    <p class="dim">Requires Go 1.26+ and a kubeconfig pointing at a cluster you are allowed to break.</p>
+<pre><span class="c"># see the whole loop run against a throwaway target</span>
+secha demo
+
+<span class="c"># see what a fault would break, without touching anything</span>
+secha run experiment.yaml --dry-run</pre>
+  </div>
+</section>
+
+<section>
+  <div class="wrap block">
+    <div class="caution">
+      <h3>It puts the control back</h3>
+      <p>
+        secha disables real controls on a real cluster, so restoring them is not best-effort. The restore
+        runs on its own context and survives Ctrl-C, a failing probe, and a fault that half-applied before
+        erroring. An experiment can be pinned to the kubeconfig contexts it is allowed to touch, and every
+        run prints the cluster it is about to act on before it acts. <code>secha demo</code> deletes the
+        namespace it created before it returns.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footrow">
+      <span class="mono">secha</span>
+      <a href="https://github.com/Thran34/secha">GitHub</a>
+      <a href="https://github.com/Thran34/secha/blob/master/LICENSE">Apache-2.0</a>
+      <span>Built as the practical half of a master's thesis on security chaos engineering.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
