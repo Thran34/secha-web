@@ -10,9 +10,10 @@ and it renders exactly as it will in production.
 
 | file | purpose |
 |---|---|
-| `index.html` | the page: markup, styles, and the shield mark inline |
+| `index.html` | the page: markup and styles, no build step |
 | `CNAME` | tells GitHub Pages to serve the site at `secha.dev` |
-| `logo.png` | favicon, and the source artwork the inline mark is drawn from |
+| `logo.svg` | the canonical mark — favicon and nav |
+| `logo.png` | raster fallback, rendered from `logo.svg` |
 
 ## Design
 
@@ -34,3 +35,11 @@ silently cancel it — use `padding-block` instead.
 
 The measurements shown in the demo readout are real output from `secha demo`, not illustrations. If the
 tool's behaviour changes, update them here too.
+
+## Logo
+
+`logo.svg` is the canonical mark and is byte-identical to the copy in the
+[secha](https://github.com/Thran34/secha) repository. It carries no background, so it sits on a light
+or dark ground unchanged. `logo.png` is rendered from it for places that will not take an SVG.
+
+Change the mark in one repository and copy it to the other — never edit one copy alone.

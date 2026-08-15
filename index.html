@@ -1,334 +1,729 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>secha</title>
-<meta name="description" content="Remove the control. Measure what's left. Security chaos engineering for Kubernetes.">
-<link rel="icon" href="logo.png">
-<style>
-:root {
-  color-scheme: dark;
-  --ground:    #0a0e13;
-  --panel:     #121a23;
-  --panel-2:   #17222d;
-  --ink:       #f2f6fa;
-  --ink-2:     #a3b4c6;
-  --muted:     #6b7d90;
-  --rule:      #1f2b37;
-  --rule-2:    #2c3b4a;
-  --signal:    #f2a03d;
-  --signal-dim:#3a2a12;
-  --lost:      #ec6a58;
-  --held:      #45c48c;
-  --lit:       #e9edf1;
-  --lit-ink:   #0a0e13;
-  --lit-ink-2: #46525f;
-  --lit-rule:  #ccd4dd;
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>secha</title>
+  <meta name="description"
+    content="Remove the control. Measure what's left. Security chaos engineering for Kubernetes.">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="alternate icon" href="logo.png">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ground: #080c11;
+      --panel: #101823;
+      --panel-2: #16233a;
+      --blue: #284d8d;
+      --blue-deep: #1d2d81;
+      --blue-line: #24406e;
+      --ink: #f2f6fa;
+      --ink-2: #a3b4c6;
+      --muted: #6b7d90;
+      --rule: #1c2836;
+      --rule-2: #2b425f;
+      --signal: #eda352;
+      --signal-dim: #3b2a13;
+      --lost: #e2685a;
+      --held: #99e583;
+      --lit: #e9edf1;
+      --lit-ink: #0a0e13;
+      --lit-ink-2: #46525f;
+      --lit-rule: #ccd4dd;
 
-  --display: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-}
+      --display: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    }
 
-*, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
 
-body {
-  margin: 0;
-  background: var(--ground);
-  color: var(--ink);
-  font-family: var(--display);
-  font-size: 17px;
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-}
+    html {
+      -webkit-text-size-adjust: 100%;
+      scroll-behavior: smooth;
+    }
 
-a { color: inherit; }
-:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 3px; }
+    body {
+      margin: 0;
+      background: var(--ground);
+      color: var(--ink);
+      font-family: var(--display);
+      font-size: 17px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
 
-.wrap { max-width: 1180px; margin: 0 auto; padding: 0 26px; width: 100%; }
+    a {
+      color: inherit;
+    }
 
-.kicker {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 20px;
-}
+    :focus-visible {
+      outline: 2px solid var(--signal);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
 
-/* ---------- nav ---------- */
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 26px;
+      width: 100%;
+    }
 
-nav { padding: 22px 0; }
-.navrow { display: flex; align-items: center; gap: 14px; }
-.mark { width: 22px; height: auto; display: block; overflow: visible; flex: none; }
-.mark .shield { fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linejoin: round; }
-.mark .crack { fill: none; stroke: var(--signal); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.wordmark { font-family: var(--mono); font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
-.navrow .spacer { flex: 1; }
-.navlink {
-  font-size: 14.5px;
-  color: var(--ink-2);
-  text-decoration: none;
-  padding: 8px 4px;
-}
-.navlink:hover { color: var(--ink); }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 20px;
+    }
 
-/* ---------- hero ---------- */
+    /* ---------- nav ---------- */
 
-.hero { display: grid; gap: 40px; padding-block: 44px 76px; align-items: center; }
-@media (min-width: 940px) { .hero { grid-template-columns: 1.02fr 1fr; gap: 56px; padding-block: 60px 96px; } }
+    nav {
+      padding: 22px 0;
+    }
 
-h1 {
-  font-size: clamp(42px, 7.6vw, 82px);
-  line-height: 0.92;
-  letter-spacing: -0.045em;
-  font-weight: 850;
-  text-transform: uppercase;
-  margin: 0 0 24px;
-  text-wrap: balance;
-}
-h1 .off { color: var(--signal); }
+    .navrow {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
 
-.sub {
-  font-size: 19px;
-  color: var(--ink-2);
-  margin: 0 0 30px;
-  max-width: 34ch;
-}
+    .mark {
+      width: 26px;
+      height: auto;
+      display: block;
+      flex: none;
+    }
 
-.cta { display: flex; flex-wrap: wrap; gap: 11px; }
-.btn {
-  font-family: var(--mono);
-  font-size: 14px;
-  padding: 12px 22px;
-  border-radius: 999px;
-  text-decoration: none;
-  border: 1px solid var(--rule-2);
-  color: var(--ink);
-  transition: background .15s, color .15s, border-color .15s;
-}
-.btn:hover { border-color: var(--signal); color: var(--signal); }
-.btn-solid { background: var(--signal); border-color: var(--signal); color: var(--ground); font-weight: 600; }
-.btn-solid:hover { background: var(--ink); border-color: var(--ink); color: var(--ground); }
+    .wordmark {
+      font-family: var(--mono);
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
 
-/* ---------- readout ---------- */
+    .navrow .spacer {
+      flex: 1;
+    }
 
-.readout {
-  background: var(--panel);
-  border: 1px solid var(--rule);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 24px 60px rgba(0,0,0,.45);
-}
-.readout-bar {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--muted);
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--rule);
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rule-2); flex: none; }
-.dot.on { background: var(--signal); }
-.readout-scroll { overflow-x: auto; }
+    .navlink {
+      font-size: 14.5px;
+      color: var(--ink-2);
+      text-decoration: none;
+      padding: 8px 4px;
+    }
 
-table.delta { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 13.5px; font-variant-numeric: tabular-nums; }
-table.delta th, table.delta td { text-align: left; padding: 11px 18px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
-table.delta thead th { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
-table.delta tbody th { font-weight: 400; color: var(--ink-2); }
-table.delta tbody tr:last-child th, table.delta tbody tr:last-child td { border-bottom: 0; }
-tr.pivot th, tr.pivot td { background: var(--signal-dim); }
-tr.pivot th { color: var(--ink); font-weight: 600; }
-.lost { color: var(--lost); font-weight: 600; }
-.held { color: var(--held); font-weight: 600; }
+    .navlink:hover {
+      color: var(--ink);
+    }
 
-/* ---------- bands ---------- */
+    /* ---------- hero ---------- */
 
-.band { padding: 78px 0; border-top: 1px solid var(--rule); }
-.band.lit { background: var(--lit); color: var(--lit-ink); border-top: 0; }
-.band.lit .kicker { color: var(--lit-ink-2); }
+    .hero {
+      display: grid;
+      gap: 40px;
+      padding-block: 44px 76px;
+      align-items: center;
+    }
 
-h2 {
-  font-size: clamp(28px, 3.9vw, 44px);
-  line-height: 1.0;
-  letter-spacing: -0.035em;
-  font-weight: 850;
-  text-transform: uppercase;
-  margin: 0 0 22px;
-  max-width: 18ch;
-  text-wrap: balance;
-}
-.band p.say { font-size: 18px; color: var(--ink-2); max-width: 52ch; margin: 0; }
-.band.lit p.say { color: var(--lit-ink-2); }
+    @media (min-width: 940px) {
+      .hero {
+        grid-template-columns: 1.02fr 1fr;
+        gap: 56px;
+        padding-block: 60px 96px;
+      }
+    }
 
-/* ---------- axes ---------- */
+    h1 {
+      font-size: clamp(42px, 7.6vw, 82px);
+      line-height: 0.92;
+      letter-spacing: -0.045em;
+      font-weight: 850;
+      text-transform: uppercase;
+      margin: 0 0 24px;
+      text-wrap: balance;
+    }
 
-.axes { display: grid; gap: 1px; background: var(--lit-rule); border: 1px solid var(--lit-rule); margin-top: 40px; }
-@media (min-width: 800px) { .axes { grid-template-columns: repeat(3, 1fr); } }
-.axis { background: var(--lit); padding: 26px 24px; }
-.axis .n { font-family: var(--mono); font-size: 12px; color: var(--lit-ink-2); letter-spacing: 0.1em; }
-.axis h3 { font-size: 21px; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; margin: 12px 0 8px; }
-.axis p { margin: 0; font-size: 15px; color: var(--lit-ink-2); }
+    h1 .off {
+      color: var(--signal);
+    }
 
-/* ---------- loop ---------- */
+    .sub {
+      font-size: 19px;
+      color: var(--ink-2);
+      margin: 0 0 30px;
+      max-width: 34ch;
+    }
 
-.loop { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 40px; }
-@media (min-width: 700px) { .loop { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1000px) { .loop { grid-template-columns: repeat(6, 1fr); } }
-.step { background: var(--panel); padding: 20px 18px; }
-.step .n { font-family: var(--mono); font-size: 11px; color: var(--signal); letter-spacing: 0.1em; }
-.step .t { font-family: var(--mono); font-size: 14px; margin: 10px 0 6px; color: var(--ink); }
-.step p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+    .cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 11px;
+    }
 
-/* ---------- install ---------- */
+    .btn {
+      font-family: var(--mono);
+      font-size: 14px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      text-decoration: none;
+      border: 1px solid var(--rule-2);
+      color: var(--ink);
+      transition: background .15s, color .15s, border-color .15s;
+    }
 
-.cmds { display: grid; gap: 12px; margin-top: 36px; }
-.cmd {
-  font-family: var(--mono);
-  font-size: 15px;
-  background: var(--panel);
-  border: 1px solid var(--rule);
-  border-radius: 8px;
-  padding: 16px 20px;
-  overflow-x: auto;
-  white-space: nowrap;
-}
-.cmd .p { color: var(--signal); }
-.cmd .note { color: var(--muted); }
+    .btn:hover {
+      border-color: var(--signal);
+      color: var(--signal);
+    }
 
-/* ---------- footer ---------- */
+    .btn-solid {
+      background: var(--signal);
+      border-color: var(--signal);
+      color: var(--ground);
+      font-weight: 600;
+    }
 
-footer { border-top: 1px solid var(--rule); padding: 30px 0 56px; }
-.footrow { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; font-size: 14px; color: var(--muted); }
-.footrow a { color: var(--ink-2); text-decoration: none; }
-.footrow a:hover { color: var(--signal); }
-.footrow .spacer { flex: 1; }
+    .btn-solid:hover {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--ground);
+    }
 
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  * { transition: none !important; animation: none !important; }
-}
-</style>
+    /* ---------- readout ---------- */
+
+    .readout {
+      background: var(--panel);
+      border: 1px solid var(--blue-line);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, .55), 0 0 0 1px rgba(40, 77, 141, .25);
+    }
+
+    .readout-bar {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: #9db4d6;
+      padding: 13px 18px;
+      background: linear-gradient(180deg, var(--panel-2), #121d30);
+      border-bottom: 1px solid var(--blue-line);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .readout-bar .cmdname {
+      color: #dce7f7;
+      margin-left: 6px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex: none;
+    }
+
+    .dot.r {
+      background: #e2685a;
+    }
+
+    .dot.n {
+      background: #5c6b7d;
+    }
+
+    .dot.g {
+      background: #99e583;
+    }
+
+    .readout-scroll {
+      overflow-x: auto;
+    }
+
+    table.delta {
+      border-collapse: collapse;
+      width: 100%;
+      font-family: var(--mono);
+      font-size: 13.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    table.delta th,
+    table.delta td {
+      text-align: left;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--rule);
+      white-space: nowrap;
+    }
+
+    table.delta tbody tr {
+      transition: background .15s;
+    }
+
+    table.delta tbody tr:hover {
+      background: rgba(40, 77, 141, .16);
+    }
+
+    table.delta thead th {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    table.delta tbody th {
+      font-weight: 400;
+      color: var(--ink-2);
+    }
+
+    table.delta tbody tr:last-child th,
+    table.delta tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tr.pivot th,
+    tr.pivot td {
+      background: var(--signal-dim);
+    }
+
+    tr.pivot:hover th,
+    tr.pivot:hover td {
+      background: #4a3517;
+    }
+
+    tr.pivot th {
+      color: var(--ink);
+      font-weight: 600;
+      box-shadow: inset 3px 0 0 var(--signal);
+    }
+
+    .lost {
+      color: var(--lost);
+      font-weight: 600;
+    }
+
+    .held {
+      color: var(--held);
+      font-weight: 600;
+    }
+
+    /* ---------- bands ---------- */
+
+    .band {
+      padding: 78px 0;
+      border-top: 1px solid var(--rule);
+    }
+
+    .band.lit {
+      background: var(--lit);
+      color: var(--lit-ink);
+      border-top: 0;
+    }
+
+    .band.lit .kicker {
+      color: var(--lit-ink-2);
+    }
+
+    h2 {
+      font-size: clamp(28px, 3.9vw, 44px);
+      line-height: 1.0;
+      letter-spacing: -0.035em;
+      font-weight: 850;
+      text-transform: uppercase;
+      margin: 0 0 22px;
+      max-width: 18ch;
+      text-wrap: balance;
+    }
+
+    .band p.say {
+      font-size: 18px;
+      color: var(--ink-2);
+      max-width: 52ch;
+      margin: 0;
+    }
+
+    .band.lit p.say {
+      color: var(--lit-ink-2);
+    }
+
+    /* ---------- axes ---------- */
+
+    .axes {
+      display: grid;
+      gap: 1px;
+      background: var(--lit-rule);
+      border: 1px solid var(--lit-rule);
+      margin-top: 40px;
+    }
+
+    @media (min-width: 800px) {
+      .axes {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .axis {
+      background: var(--lit);
+      padding: 26px 24px;
+      transition: background .18s, box-shadow .18s;
+    }
+
+    .axis:hover {
+      background: #ffffff;
+      box-shadow: inset 0 3px 0 var(--blue);
+    }
+
+    .axis:hover .n {
+      color: var(--blue);
+    }
+
+    .axis .n {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--lit-ink-2);
+      letter-spacing: 0.1em;
+    }
+
+    .axis h3 {
+      font-size: 21px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      margin: 12px 0 8px;
+    }
+
+    .axis p {
+      margin: 0;
+      font-size: 15px;
+      color: var(--lit-ink-2);
+    }
+
+    /* ---------- loop ---------- */
+
+    .loop {
+      display: grid;
+      gap: 1px;
+      background: var(--rule);
+      border: 1px solid var(--rule);
+      margin-top: 40px;
+    }
+
+    @media (min-width: 700px) {
+      .loop {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 1000px) {
+      .loop {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+
+    .step {
+      background: var(--panel);
+      padding: 20px 18px;
+      transition: background .18s, box-shadow .18s;
+    }
+
+    .step:hover {
+      background: var(--panel-2);
+      box-shadow: inset 0 3px 0 var(--signal);
+    }
+
+    .step:hover .t {
+      color: var(--signal);
+    }
+
+    .step .n {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--signal);
+      letter-spacing: 0.1em;
+    }
+
+    .step .t {
+      font-family: var(--mono);
+      font-size: 14px;
+      margin: 10px 0 6px;
+      color: var(--ink);
+    }
+
+    .step p {
+      margin: 0;
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    /* ---------- install ---------- */
+
+    .cmds {
+      display: grid;
+      gap: 22px;
+      margin-top: 36px;
+    }
+
+    .cmd-label {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0 0 8px;
+    }
+
+    .cmd {
+      transition: border-color .18s, background .18s;
+      font-family: var(--mono);
+      font-size: 15px;
+      background: var(--panel);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .cmd:hover {
+      border-color: var(--blue-line);
+      background: var(--panel-2);
+    }
+
+    .cmd .p {
+      color: var(--signal);
+    }
+
+    .cmd .note {
+      color: var(--muted);
+    }
+
+    /* ---------- footer ---------- */
+
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 30px 0 56px;
+    }
+
+    .footrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 24px;
+      align-items: center;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .footrow .mark {
+      width: 18px;
+    }
+
+    .footrow a {
+      color: var(--ink-2);
+      text-decoration: none;
+    }
+
+    .footrow a:hover {
+      color: var(--signal);
+    }
+
+    .footrow .spacer {
+      flex: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      * {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<nav>
-  <div class="wrap navrow">
-    <svg class="mark" viewBox="0 0 24 28" aria-hidden="true">
-      <path class="shield" d="M12 1.4 21.6 5.2v9.1c0 5.6-4 10.4-9.6 12.3-5.6-1.9-9.6-6.7-9.6-12.3V5.2Z"/>
-      <path class="crack" d="M16.8 3.6 12.6 10.6l3 2.4-5.4 8.9"/>
-    </svg>
-    <span class="wordmark">secha</span>
-    <span class="spacer"></span>
-    <a class="navlink" href="#how">How it works</a>
-    <a class="navlink" href="#install">Install</a>
-    <a class="navlink" href="https://github.com/Thran34/secha">GitHub</a>
-  </div>
-</nav>
-
-<div class="wrap hero">
-  <div>
-    <p class="kicker">Security chaos engineering for Kubernetes</p>
-    <h1>Remove the control.<br>Measure <span class="off">what's left.</span></h1>
-    <p class="sub">Your detection may only work because something else is stopping the attack first.</p>
-    <div class="cta">
-      <a class="btn btn-solid" href="#install">Install</a>
-      <a class="btn" href="https://github.com/Thran34/secha">GitHub</a>
+  <nav>
+    <div class="wrap navrow">
+      <img class="mark" src="logo.svg" alt="" width="26" height="30">
+      <span class="wordmark">secha</span>
+      <span class="spacer"></span>
+      <a class="navlink" href="#how">How it works</a>
+      <a class="navlink" href="#install">Install</a>
+      <a class="navlink" href="https://github.com/Thran34/secha">GitHub</a>
     </div>
-  </div>
+  </nav>
 
-  <div class="readout">
-    <div class="readout-bar"><span class="dot on"></span><span class="dot"></span><span class="dot"></span>secha demo</div>
-    <div class="readout-scroll">
-      <table class="delta">
-        <thead>
-          <tr><th scope="col">indicator</th><th scope="col">no auth</th><th scope="col">auth</th></tr>
-        </thead>
-        <tbody>
-          <tr><th scope="row">fault applied</th><td>true</td><td>true</td></tr>
-          <tr><th scope="row">data exposed</th><td class="lost">true</td><td class="held">false</td></tr>
-          <tr class="pivot"><th scope="row">detected</th><td class="lost">false</td><td class="held">true</td></tr>
-          <tr><th scope="row">time to detect</th><td class="lost">never</td><td>676.6 ms</td></tr>
-          <tr><th scope="row">recovery integrity</th><td>true</td><td>true</td></tr>
-        </tbody>
-      </table>
+  <div class="wrap hero">
+    <div>
+      <p class="kicker">Security chaos engineering for Kubernetes</p>
+      <h1>Remove the control.<br>Measure <span class="off">what's left.</span></h1>
+      <p class="sub">Your detection may only work because something else is stopping the attack first.</p>
+      <div class="cta">
+        <a class="btn btn-solid" href="#install">Install</a>
+        <a class="btn" href="https://github.com/Thran34/secha">GitHub</a>
+      </div>
     </div>
-  </div>
-</div>
 
-<section class="band lit">
-  <div class="wrap">
-    <p class="kicker">What that row means</p>
-    <h2>Drop the password, lose the alarm</h2>
-    <p class="say">
-      Two redis instances, one password apart, behind the same NetworkPolicy. Delete it in front of both
-      and only one loses the data — but the same change also erases the signal. The detection was the
-      <em>failed</em> login. Where nothing authenticates, nothing fails, and nothing is logged.
-    </p>
-
-    <div class="axes">
-      <div class="axis">
-        <p class="n">01</p>
-        <h3>Survival</h3>
-        <p>Whether a second layer absorbs the attack once the first is gone.</p>
+    <div class="readout">
+      <div class="readout-bar">
+        <span class="dot r"></span><span class="dot n"></span><span class="dot g"></span>
+        <span class="cmdname">secha demo</span>
       </div>
-      <div class="axis">
-        <p class="n">02</p>
-        <h3>Visibility</h3>
-        <p>Whether anything sees it, and how many milliseconds it takes.</p>
-      </div>
-      <div class="axis">
-        <p class="n">03</p>
-        <h3>Prevention</h3>
-        <p>Whether the misconfiguration was refused before it could exist.</p>
+      <div class="readout-scroll">
+        <table class="delta">
+          <thead>
+            <tr>
+              <th scope="col">indicator</th>
+              <th scope="col">no auth</th>
+              <th scope="col">auth</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">fault applied</th>
+              <td>true</td>
+              <td>true</td>
+            </tr>
+            <tr>
+              <th scope="row">data exposed</th>
+              <td class="lost">true</td>
+              <td class="held">false</td>
+            </tr>
+            <tr class="pivot">
+              <th scope="row">detected</th>
+              <td class="lost">false</td>
+              <td class="held">true</td>
+            </tr>
+            <tr>
+              <th scope="row">time to detect</th>
+              <td class="lost">never</td>
+              <td>676.6 ms</td>
+            </tr>
+            <tr>
+              <th scope="row">recovery integrity</th>
+              <td>true</td>
+              <td>true</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
-</section>
 
-<section class="band" id="how">
-  <div class="wrap">
-    <p class="kicker">One run</p>
-    <h2>An experiment, not a script</h2>
-    <p class="say">Six steps, always in this order. The control goes back even if you interrupt it.</p>
+  <section class="band lit">
+    <div class="wrap">
+      <p class="kicker">What that row means</p>
+      <h2>Drop the password, lose the alarm</h2>
+      <p class="say">
+        Two redis instances, one password apart, behind the same NetworkPolicy. Delete it in front of both
+        and only one loses the data — but the same change also erases the signal. The detection was the
+        <em>failed</em> login. Where nothing authenticates, nothing fails, and nothing is logged.
+      </p>
 
-    <div class="loop">
-      <div class="step"><p class="n">01</p><p class="t">steady state</p><p>Abort if the precondition is already broken.</p></div>
-      <div class="step"><p class="n">02</p><p class="t">fault</p><p>Disable one security control.</p></div>
-      <div class="step"><p class="n">03</p><p class="t">probe</p><p>Run the attack it was meant to stop.</p></div>
-      <div class="step"><p class="n">04</p><p class="t">observe</p><p>Did anything catch it, and when.</p></div>
-      <div class="step"><p class="n">05</p><p class="t">restore</p><p>Always. Interrupted runs too.</p></div>
-      <div class="step"><p class="n">06</p><p class="t">verify</p><p>Recovery measured, not assumed.</p></div>
+      <div class="axes">
+        <div class="axis">
+          <p class="n">01</p>
+          <h3>Survival</h3>
+          <p>Whether a second layer absorbs the attack once the first is gone.</p>
+        </div>
+        <div class="axis">
+          <p class="n">02</p>
+          <h3>Visibility</h3>
+          <p>Whether anything sees it, and how many milliseconds it takes.</p>
+        </div>
+        <div class="axis">
+          <p class="n">03</p>
+          <h3>Prevention</h3>
+          <p>Whether the misconfiguration was refused before it could exist.</p>
+        </div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="band" id="install">
-  <div class="wrap">
-    <p class="kicker">Install</p>
-    <h2>One binary. No agents, no CRDs</h2>
-    <p class="say">Go 1.26+ and a kubeconfig for a cluster you are allowed to break.</p>
+  <section class="band" id="how">
+    <div class="wrap">
+      <p class="kicker">How it works</p>
+      <h2>Six steps of chaos</h2>
+      <p class="say">Always in this order. The control goes back even if you interrupt it.</p>
 
-    <div class="cmds">
-      <div class="cmd"><span class="p">$</span> go install github.com/Thran34/secha/cmd/secha@latest</div>
-      <div class="cmd"><span class="p">$</span> secha demo <span class="note">&nbsp;&nbsp;# builds its own target, measures, deletes it</span></div>
-      <div class="cmd"><span class="p">$</span> secha run experiment.yaml --dry-run <span class="note">&nbsp;&nbsp;# nothing is touched</span></div>
+      <div class="loop">
+        <div class="step">
+          <p class="n">01</p>
+          <p class="t">steady state</p>
+          <p>Abort if the precondition is already broken.</p>
+        </div>
+        <div class="step">
+          <p class="n">02</p>
+          <p class="t">fault</p>
+          <p>Disable one security control.</p>
+        </div>
+        <div class="step">
+          <p class="n">03</p>
+          <p class="t">probe</p>
+          <p>Run the attack it was meant to stop.</p>
+        </div>
+        <div class="step">
+          <p class="n">04</p>
+          <p class="t">observe</p>
+          <p>Did anything catch it, and when.</p>
+        </div>
+        <div class="step">
+          <p class="n">05</p>
+          <p class="t">restore</p>
+          <p>Always. Interrupted runs too.</p>
+        </div>
+        <div class="step">
+          <p class="n">06</p>
+          <p class="t">verify</p>
+          <p>Recovery measured, not assumed.</p>
+        </div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<footer>
-  <div class="wrap footrow">
-    <span class="wordmark">secha</span>
-    <span class="spacer"></span>
-    <a href="https://github.com/Thran34/secha">GitHub</a>
-    <a href="https://github.com/Thran34/secha/blob/master/LICENSE">Apache-2.0</a>
-    <span>The practical half of a master's thesis.</span>
-  </div>
-</footer>
+  <section class="band" id="install">
+    <div class="wrap">
+      <p class="kicker">Install</p>
+      <h2>Running in a minute</h2>
+      <p class="say">Go 1.26+ and a kubeconfig for a cluster you are allowed to break.</p>
+
+      <div class="cmds">
+        <div class="cmd-item">
+          <p class="cmd-label">Install</p>
+          <div class="cmd"><span class="p">$</span> go install github.com/Thran34/secha/cmd/secha@latest</div>
+        </div>
+        <div class="cmd-item">
+          <p class="cmd-label">See the loop run against a target it builds and deletes itself</p>
+          <div class="cmd"><span class="p">$</span> secha demo</div>
+        </div>
+        <div class="cmd-item">
+          <p class="cmd-label">Preview a fault without touching the cluster</p>
+          <div class="cmd"><span class="p">$</span> secha run experiment.yaml --dry-run</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap footrow">
+      <img class="mark" src="logo.svg" alt="" width="18" height="21">
+      <span class="wordmark">secha</span>
+      <span class="spacer"></span>
+      <a href="https://github.com/Thran34/secha">GitHub</a>
+      <a href="https://github.com/Thran34/secha/blob/master/LICENSE">Apache-2.0</a>
+      <span>The practical half of a master's thesis.</span>
+    </div>
+  </footer>
 
 </body>
+
 </html>
