@@ -14,15 +14,21 @@ and it renders exactly as it will in production.
 | `CNAME` | tells GitHub Pages to serve the site at `secha.dev` |
 | `logo.png` | favicon, and the source artwork the inline mark is drawn from |
 
-## Editing
+## Design
 
-Colours and spacing come from CSS custom properties defined at the top of `index.html`. Every token is
-declared three times so the page holds in all three viewer states: the bare `:root` block covers light,
-a `prefers-color-scheme: dark` block covers a dark OS with no explicit choice, and a `[data-theme="dark"]`
-block covers an explicit toggle. Change a colour once in each of those three places, never inside a
-component rule.
+The page commits to one look rather than following the viewer's theme: a dark instrument panel, because
+the subject is a signal that goes missing. `color-scheme: dark` is declared and every colour is painted
+explicitly, so the page holds whatever ground the browser puts behind it.
 
-To preview the dark theme without changing your OS setting, add `data-theme="dark"` to the `<html>` tag.
+Three roles carry the type. A heavy uppercase sans does the talking, monospace does the measuring — it
+appears only where real data does, in the readout and the commands — and the amber accent marks one
+thing per screen. Red and green are reserved for measured outcomes and never used as decoration.
+
+All colours and both fonts are CSS custom properties at the top of `index.html`. Change them there,
+never inside a component rule.
+
+Layout note: `.wrap` owns the horizontal padding. A child that also sets the `padding` shorthand will
+silently cancel it — use `padding-block` instead.
 
 ## Numbers on this page
 
