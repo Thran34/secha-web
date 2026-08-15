@@ -3,14 +3,15 @@
 Landing page for [secha](https://github.com/Thran34/secha), a security chaos engineering tool for
 Kubernetes.
 
-A single static page. No build step, no dependencies, no JavaScript — open `index.html` in a browser
-and it renders exactly as it will in production.
+A single static page. No build step and no dependencies — open `index.html` in a browser and it renders
+exactly as it will in production. The only script on the page copies a command to the clipboard; the
+page is complete without it.
 
 ## Files
 
 | file | purpose |
 |---|---|
-| `index.html` | the page: markup and styles, no build step |
+| `index.html` | the page: markup, styles and the copy-button script |
 | `CNAME` | tells GitHub Pages to serve the site at `secha.dev` |
 | `logo.svg` | the canonical mark — favicon and nav |
 | `logo.png` | raster fallback, rendered from `logo.svg` |

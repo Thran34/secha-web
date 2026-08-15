@@ -480,14 +480,53 @@
 
     .cmd {
       transition: border-color .18s, background .18s;
-      font-family: var(--mono);
-      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
       background: var(--panel);
       border: 1px solid var(--rule);
       border-radius: 8px;
-      padding: 16px 20px;
+      padding: 0 10px 0 20px;
+    }
+
+    .cmd code {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--ink-2);
+      padding: 16px 0;
       overflow-x: auto;
       white-space: nowrap;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .copy {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--rule-2);
+      border-radius: 7px;
+      cursor: pointer;
+      flex: none;
+      padding: 0;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+
+    .copy svg {
+      display: block;
+    }
+
+    .copy:hover {
+      color: var(--signal);
+      border-color: var(--signal);
+    }
+
+    .copy[data-done="1"] {
+      color: var(--held);
+      border-color: var(--held);
     }
 
     .cmd:hover {
@@ -621,7 +660,7 @@
 
   <section class="band lit">
     <div class="wrap">
-      <p class="kicker">What that row means</p>
+      <p class="kicker">What it means</p>
       <h2>Drop the password, lose the alarm</h2>
       <p class="say">
         Two redis instances, one password apart, behind the same NetworkPolicy. Delete it in front of both
@@ -700,15 +739,31 @@
       <div class="cmds">
         <div class="cmd-item">
           <p class="cmd-label">Install</p>
-          <div class="cmd"><span class="p">$</span> go install github.com/Thran34/secha/cmd/secha@latest</div>
+          <div class="cmd">
+            <code><span class="p">$</span> go install github.com/Thran34/secha/cmd/secha@latest</code>
+            <button class="copy" type="button" data-copy="go install github.com/Thran34/secha/cmd/secha@latest"
+              aria-label="Copy command" title="Copy"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+          </div>
         </div>
         <div class="cmd-item">
           <p class="cmd-label">See the loop run against a target it builds and deletes itself</p>
-          <div class="cmd"><span class="p">$</span> secha demo</div>
+          <div class="cmd">
+            <code><span class="p">$</span> secha demo</code>
+            <button class="copy" type="button" data-copy="secha demo" aria-label="Copy command" title="Copy" title="Copy"><svg
+                viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9"
+                stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="12" rx="2" />
+                <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+              </svg></button>
+          </div>
         </div>
         <div class="cmd-item">
           <p class="cmd-label">Preview a fault without touching the cluster</p>
-          <div class="cmd"><span class="p">$</span> secha run experiment.yaml --dry-run</div>
+          <div class="cmd">
+            <code><span class="p">$</span> secha run experiment.yaml --dry-run</code>
+            <button class="copy" type="button" data-copy="secha run experiment.yaml --dry-run"
+              aria-label="Copy command" title="Copy"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+          </div>
         </div>
       </div>
     </div>
@@ -721,10 +776,58 @@
       <span class="spacer"></span>
       <a href="https://github.com/Thran34/secha">GitHub</a>
       <a href="https://github.com/Thran34/secha/blob/master/LICENSE">Apache-2.0</a>
-      <span>The practical half of a master's thesis.</span>
     </div>
   </footer>
 
+
+  <script>
+    (function () {
+      var CHECK = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"'
+        + ' stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+        + '<path d="m4 12.5 5.2 5.2L20 6.9"/></svg>';
+
+      document.querySelectorAll('.copy').forEach(function (btn) {
+        var icon = btn.innerHTML;
+        var timer;
+
+        btn.addEventListener('click', function () {
+          var text = btn.getAttribute('data-copy');
+
+          function settle(ok) {
+            clearTimeout(timer);
+            btn.innerHTML = ok ? CHECK : icon;
+            btn.setAttribute('title', ok ? 'Copied' : 'Press Cmd-C to copy');
+            if (ok) { btn.setAttribute('data-done', '1'); }
+            timer = setTimeout(function () {
+              btn.innerHTML = icon;
+              btn.setAttribute('title', 'Copy');
+              btn.removeAttribute('data-done');
+            }, 1600);
+          }
+
+          function fallback() {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            var ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+            document.body.removeChild(ta);
+            settle(ok);
+          }
+
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function () { settle(true); }, fallback);
+          } else {
+            fallback();
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 
 </html>
