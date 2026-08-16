@@ -585,6 +585,68 @@
         animation: none !important;
       }
     }
+
+    .step .term {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 8px;
+    }
+
+    .lead {
+      font-size: 20px;
+      line-height: 1.5;
+      color: var(--ink-2);
+      max-width: 56ch;
+      margin: 0 0 20px;
+    }
+
+    .band.lit .lead {
+      color: var(--lit-ink-2);
+    }
+
+    .band .say+.say {
+      margin-top: 16px;
+    }
+
+    .loop.story {
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 760px) {
+      .loop.story {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .loop.story .step {
+      padding: 24px 22px;
+    }
+
+    .loop.story .t {
+      font-family: var(--display);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .loop.story .step p:last-child {
+      font-size: 14.5px;
+      line-height: 1.5;
+      color: var(--ink-2);
+    }
+
+    .inlinecode {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 2px 6px;
+    }
   </style>
 </head>
 
@@ -605,7 +667,10 @@
     <div>
       <p class="kicker">Security chaos engineering for Kubernetes</p>
       <h1>Remove the control.<br>Measure <span class="off">what's left.</span></h1>
-      <p class="sub">Your detection may only work because something else is stopping the attack first.</p>
+      <p class="sub">
+        secha lets you switch off one of your security controls, run the attack
+        that control was blocking, and shows you what the rest of your system did about it.
+      </p>
       <div class="cta">
         <a class="btn btn-solid" href="#install">Install</a>
         <a class="btn" href="https://github.com/Thran34/secha">GitHub</a>
@@ -627,11 +692,6 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th scope="row">fault applied</th>
-              <td>true</td>
-              <td>true</td>
-            </tr>
             <tr>
               <th scope="row">data exposed</th>
               <td class="lost">true</td>
@@ -660,29 +720,91 @@
 
   <section class="band lit">
     <div class="wrap">
-      <p class="kicker">What it means</p>
-      <h2>Drop the password, lose the alarm</h2>
-      <p class="say">
-        Two redis instances, one password apart, behind the same NetworkPolicy. Delete it in front of both
-        and only one loses the data — but the same change also erases the signal. The detection was the
-        <em>failed</em> login. Where nothing authenticates, nothing fails, and nothing is logged.
+      <p class="kicker">Start here</p>
+      <h2>Why break your own defences</h2>
+
+      <p class="lead">
+        Security is built in layers. A firewall rule, then a password, then an alert if someone tries to break the
+        system.
       </p>
+      <p class="say">
+        Most of the time the attacks are detected and stopped in the outer layers of security.
+        However, sometimes the security measures fail, such as a bad deploy that removes a firewall rule. Someone grants
+        one permission too many. A certificate expires.
+      </p>
+      <p class="say">
+        That is what <strong>chaos engineering</strong> fixes for reliability: you shut a server down on purpose, so you
+        learn how the system copes before it happens by accident.
+      </p>
+      <p class="say">
+        <strong>secha</strong> does the same thing for security controls — on a cluster you pick, for a few
+        seconds, and it measures what
+        happened.
+      </p>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <p class="kicker">An example</p>
+      <h2>Two databases, one password apart</h2>
+      <p class="lead">This is what <code class="inlinecode">secha demo</code> runs. It sets everything up
+        and removes it again afterwards.</p>
+
+      <div class="loop story">
+        <div class="step">
+          <p class="n">01</p>
+          <p class="t">The setup</p>
+          <p>Two identical databases. One asks for a password, one does not. A firewall rule keeps the
+            attacker away from both.</p>
+        </div>
+        <div class="step">
+          <p class="n">02</p>
+          <p class="t">The break</p>
+          <p><strong>secha</strong> deletes that firewall rule — the same rule, in front of both databases.</p>
+        </div>
+        <div class="step">
+          <p class="n">03</p>
+          <p class="t">The attack</p>
+          <p>An attacker pod connects to each database and tries to read a secret out of it.</p>
+        </div>
+      </div>
+
+      <p class="say" style="margin-top:34px">
+        <strong>The database with a password held.</strong> The attacker was refused, and the refused
+        login was written to the log — so there was something to alert on.
+      </p>
+      <p class="say">
+        <strong>The database without one lost the secret.</strong> And nothing was written anywhere,
+        because a database that never asks for a password never records a failed attempt.
+      </p>
+      <p class="say">
+        Taking the password away removed the protection <em>and</em> the evidence. Two things were lost,
+        and only one of them would have been noticed.
+      </p>
+    </div>
+  </section>
+
+  <section class="band lit">
+    <div class="wrap">
+      <p class="kicker">What you get back</p>
+      <h2>Three questions, answered with numbers</h2>
 
       <div class="axes">
         <div class="axis">
           <p class="n">01</p>
-          <h3>Survival</h3>
-          <p>Whether a second layer absorbs the attack once the first is gone.</p>
+          <h3>Did it get through?</h3>
+          <p>Whether the attack actually reached the data once the control was gone.</p>
         </div>
         <div class="axis">
           <p class="n">02</p>
-          <h3>Visibility</h3>
-          <p>Whether anything sees it, and how many milliseconds it takes.</p>
+          <h3>Did anything notice?</h3>
+          <p>Whether anything saw it, and how many milliseconds it took to say so.</p>
         </div>
         <div class="axis">
           <p class="n">03</p>
-          <h3>Prevention</h3>
-          <p>Whether the misconfiguration was refused before it could exist.</p>
+          <h3>Was it even allowed?</h3>
+          <p>Whether the system refused the dangerous change before it could take effect.</p>
         </div>
       </div>
     </div>
@@ -690,40 +812,46 @@
 
   <section class="band" id="how">
     <div class="wrap">
-      <p class="kicker">How it works</p>
-      <h2>Six steps of chaos</h2>
-      <p class="say">Always in this order. The control goes back even if you interrupt it.</p>
+      <p class="kicker"></p>
+      <h2>Six steps for better security control</h2>
+      <p class="lead">Step by step.</p>
 
       <div class="loop">
         <div class="step">
           <p class="n">01</p>
-          <p class="t">steady state</p>
-          <p>Abort if the precondition is already broken.</p>
+          <p class="t">Check</p>
+          <p class="term">steady state</p>
+          <p>Confirm the system starts in the state we expect.</p>
         </div>
         <div class="step">
           <p class="n">02</p>
-          <p class="t">fault</p>
-          <p>Disable one security control.</p>
+          <p class="t">Break</p>
+          <p class="term">fault</p>
+          <p>Switch off exactly one security control.</p>
         </div>
         <div class="step">
           <p class="n">03</p>
-          <p class="t">probe</p>
-          <p>Run the attack it was meant to stop.</p>
+          <p class="t">Attack</p>
+          <p class="term">probe</p>
+          <p>Run the attack that control was blocking.</p>
         </div>
         <div class="step">
           <p class="n">04</p>
-          <p class="t">observe</p>
-          <p>Did anything catch it, and when.</p>
+          <p class="t">Watch</p>
+          <p class="term">observe</p>
+          <p>See whether anything catches it, and how long that takes.</p>
         </div>
         <div class="step">
           <p class="n">05</p>
-          <p class="t">restore</p>
-          <p>Always. Interrupted runs too.</p>
+          <p class="t">Put it back</p>
+          <p class="term">restore</p>
+          <p>Get back to the state before the attack.</p>
         </div>
         <div class="step">
           <p class="n">06</p>
-          <p class="t">verify</p>
-          <p>Recovery measured, not assumed.</p>
+          <p class="t">Confirm</p>
+          <p class="term">verify</p>
+          <p>Verify the control is working again.</p>
         </div>
       </div>
     </div>
@@ -733,8 +861,8 @@
     <div class="wrap">
       <p class="kicker">Install</p>
       <h2>Running in a minute</h2>
-      <p class="say">Go 1.26+ and a cluster you are allowed to break, on a CNI that enforces NetworkPolicy —
-        Calico, Cilium, kube-router or Weave.</p>
+      <p class="lead">Go 1.26+ and a k8s cluster you are allowed to break, on a CNI that enforces
+        NetworkPolicy — Calico, Cilium, kube-router or Weave.</p>
 
       <div class="cmds">
         <div class="cmd-item">
@@ -742,14 +870,18 @@
           <div class="cmd">
             <code><span class="p">$</span> go install github.com/Thran34/secha/cmd/secha@latest</code>
             <button class="copy" type="button" data-copy="go install github.com/Thran34/secha/cmd/secha@latest"
-              aria-label="Copy command" title="Copy"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+              aria-label="Copy command" title="Copy"><svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+                stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="12" rx="2" />
+                <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+              </svg></button>
           </div>
         </div>
         <div class="cmd-item">
-          <p class="cmd-label">See the loop run against a target it builds and deletes itself</p>
+          <p class="cmd-label">Watch the whole thing run against a target it builds and deletes itself</p>
           <div class="cmd">
             <code><span class="p">$</span> secha demo</code>
-            <button class="copy" type="button" data-copy="secha demo" aria-label="Copy command" title="Copy" title="Copy"><svg
+            <button class="copy" type="button" data-copy="secha demo" aria-label="Copy command" title="Copy"><svg
                 viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9"
                 stroke-linejoin="round" aria-hidden="true">
                 <rect x="9" y="9" width="11" height="12" rx="2" />
@@ -758,11 +890,15 @@
           </div>
         </div>
         <div class="cmd-item">
-          <p class="cmd-label">Preview a fault without touching the cluster</p>
+          <p class="cmd-label">See what a run would break, without touching the systen</p>
           <div class="cmd">
             <code><span class="p">$</span> secha run experiment.yaml --dry-run</code>
-            <button class="copy" type="button" data-copy="secha run experiment.yaml --dry-run"
-              aria-label="Copy command" title="Copy"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+            <button class="copy" type="button" data-copy="secha run experiment.yaml --dry-run" aria-label="Copy command"
+              title="Copy"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="12" rx="2" />
+                <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+              </svg></button>
           </div>
         </div>
       </div>
@@ -778,7 +914,6 @@
       <a href="https://github.com/Thran34/secha/blob/master/LICENSE">Apache-2.0</a>
     </div>
   </footer>
-
 
   <script>
     (function () {
@@ -828,6 +963,7 @@
       });
     })();
   </script>
+
 </body>
 
 </html>
